@@ -4,7 +4,9 @@
  */
 package registro_veiculo.model;
 
-import java.sql.*;
+import java.sql.Date;
+
+import java.util.*;
 
 /**
  *
@@ -20,6 +22,8 @@ public class Motorista {
     private String compEndereco;
     private String sexo;
     private Endereco endereco;
+    private List<FoneMotorista> fones;
+    private List<EmailMotorista> emails;
 
     public int getIdMotorista() {
         return idMotorista;
@@ -85,13 +89,30 @@ public class Motorista {
         this.sexo = sexo;
     }
 
-    public Endereco getEnderecoCompleto() {
+    public Endereco getEndereco() {
         return endereco;
     }
 
-    public void setEnderecoCompleto(Endereco endereco) {
+    public void setEndereco(Endereco endereco) {
         this.endereco = endereco;
     }
+
+    public List<FoneMotorista> getFones() {
+        return fones;
+    }
+
+    public void setFones(List<FoneMotorista> fones) {
+        this.fones = fones;
+    }
+
+    public List<EmailMotorista> getEmails() {
+        return emails;
+    }
+
+    public void setEmails(List<EmailMotorista> emails) {
+        this.emails = emails;
+    }
+    
     
     
 }
