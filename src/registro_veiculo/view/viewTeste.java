@@ -4,7 +4,7 @@
  */
 package registro_veiculo.view;
 
-import registro_veiculo.dao.*;
+//import registro_veiculo.dao.*;
 
 /**
  *
