@@ -5,12 +5,14 @@
 package registro_veiculo.model;
 
 import java.sql.*;
+import java.util.List;
 
 /**
  *
  * @author molsousa
  */
 public class Veiculo {
+    private int idVeiculo;
     private String placa;
     private String chassi;
     private String renavam;
@@ -19,6 +21,16 @@ public class Veiculo {
     private String categoriaVeiculo;
     private Marca marca;
     private Modelo modelo;
+    private List<Motorista> proprietarios;
+    private List<IPVA> ipvas;
+
+    public int getIdVeiculo() {
+        return idVeiculo;
+    }
+
+    public void setIdVeiculo(int idVeiculo) {
+        this.idVeiculo = idVeiculo;
+    }
 
     public String getPlaca() {
         return placa;
@@ -83,6 +95,22 @@ public class Veiculo {
     public void setModelo(Modelo modelo) {
         this.modelo = modelo;
     }
-    
-    
+
+    public List<Motorista> getProprietarios() {
+        return proprietarios;
+    }
+
+    public void setProprietarios(List<Motorista> proprietarios) {
+        this.proprietarios = proprietarios;
+    }
+
+    public List<IPVA> getIpvas() {
+        return ipvas;
+    }
+
+    public void setIpvas(List<IPVA> ipvas) {
+        this.ipvas = ipvas;
+    }
+
+
 }

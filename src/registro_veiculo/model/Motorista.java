@@ -24,6 +24,8 @@ public class Motorista {
     private Endereco endereco;
     private List<FoneMotorista> fones;
     private List<EmailMotorista> emails;
+    private CNH cnh;
+    private List<Veiculo> veiculos;
 
     public int getIdMotorista() {
         return idMotorista;
@@ -112,7 +114,23 @@ public class Motorista {
     public void setEmails(List<EmailMotorista> emails) {
         this.emails = emails;
     }
-    
-    
-    
+
+    public CNH getCnh() {
+        return cnh;
+    }
+
+    public void setCnh(CNH cnh) {
+        this.cnh = cnh;
+    }
+
+    public List<Veiculo> getVeiculos() {
+        return veiculos;
+    }
+
+    public void setVeiculos(List<Veiculo> veiculos) {
+        this.veiculos = veiculos;
+    }
+
+
+
 }

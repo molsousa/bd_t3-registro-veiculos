@@ -10,9 +10,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-
-import registro_veiculo.model.*;
 import registro_veiculo.connection.*;
+import registro_veiculo.model.*;
 
 /**
  *
@@ -23,10 +22,34 @@ public class InfracaoDAO {
     // Tem algumas classes model também pra facilitar o armazenamento quando puxar o SQL
     // Classe de teste e principal no pacote view
 
-    /**
-     * Junta as infos do Motorista + Veiculo + Infracao (e tabelas de apoio)
-     * em um único SQL, para não precisar de várias idas ao banco.
-     */
+    public static class InfracaoCompleta {
+        private Infracao infracao;
+        private Motorista motorista;
+        private Veiculo veiculo;
+
+        public Infracao getInfracao() {
+            return infracao;
+        }
+        public void setInfracao(Infracao infracao) {
+            this.infracao = infracao;
+        }
+
+        public Motorista getMotorista() {
+            return motorista;
+        }
+        public void setMotorista(Motorista motorista) {
+            this.motorista = motorista;
+        }
+
+        public Veiculo getVeiculo() {
+            return veiculo;
+        }
+        public void setVeiculo(Veiculo veiculo) {
+            this.veiculo = veiculo;
+        }
+    }
+
+
     private static final String SQL_BASE =
         "SELECT " +
         "  i.\"dtInfracao\", i.\"horaInfracao\", ti.\"descricaoTipoInfracao\", " +
@@ -37,14 +60,15 @@ public class InfracaoDAO {
         "  tlInfr.\"siglaTipoLogradouro_PK\" AS infr_siglaTipoLogradouro, " +
         "  v.\"placa\", v.\"chassi\", v.\"renevam\", v.\"anoFabricacao\", " +
         "  cor.\"descricaoCor\", cat.\"descricaoCategoria\", " +
-        "  mar.\"descricaoMarca\", mod.\"descricaoModeo\", mod.\"anoLancamento\", " +
+        "  mar.\"descricaoMarca\", mod.\"descricaoModelo\", mod.\"anoLancamento\", " +
         "  m.\"idMotorista_PK\", m.\"cpf\", m.\"cnpj\", m.\"nome\", " +
         "  m.\"dtNascimento_Fundacao\", m.\"nroEndereco\", m.\"compEndereco\", sx.\"descricaoSexo\", " +
         "  eMot.\"cep\" AS mot_cep, bMot.\"nomeBairro\" AS mot_bairro, " +
         "  cMot.\"nomeCidade\" AS mot_cidade, ufMot.\"nomeUF\" AS mot_uf, " +
         "  ufMot.\"siglaUF_PK\" AS mot_siglaUf, lMot.\"nomeLogradouro\" AS mot_logradouro, " +
         "  tlMot.\"nomeTipoLogradouro\" AS mot_tipoLogradouro, " +
-        "  tlMot.\"siglaTipoLogradouro_PK\" AS mot_siglaTipoLogradouro " +
+        "  tlMot.\"siglaTipoLogradouro_PK\" AS mot_siglaTipoLogradouro, " +
+        "  cnh.\"idCNH_PK\", cnh.\"nroRegistro\", cnh.\"dtEmissao\", cnh.\"dtValidade\" " +
         "FROM \"Infracao\" i " +
         "JOIN \"TipoInfracao\" ti ON ti.\"idTipoInfracao_PK\" = i.\"idTipoInfracao_FK\" " +
         "JOIN \"Endereco\" eInfr ON eInfr.\"idEndereco_PK\" = i.\"localInfracao_FK\" " +
@@ -65,12 +89,12 @@ public class InfracaoDAO {
         "JOIN \"Cidade\" cMot ON cMot.\"idCidade_PK\" = eMot.\"idCidade_Fk\" " +
         "JOIN \"UF\" ufMot ON ufMot.\"siglaUF_PK\" = cMot.\"siglaUF_FK\" " +
         "JOIN \"Logradouro\" lMot ON lMot.\"idLogradouro_PK\" = eMot.\"idLogradouro_FK\" " +
-        "JOIN \"TipoLogradouro\" tlMot ON tlMot.\"siglaTipoLogradouro_PK\" = lMot.\"siglaTipoLogradouro_FK\" ";
+        "JOIN \"TipoLogradouro\" tlMot ON tlMot.\"siglaTipoLogradouro_PK\" = lMot.\"siglaTipoLogradouro_FK\" " +
+        "LEFT JOIN \"CNH\" cnh ON cnh.\"idMotorista_FK\" = m.\"idMotorista_PK\" ";
 
-    /**
-     * Busca todas as infrações já com os dados do motorista e do veículo
-     * envolvidos, ordenadas da mais recente para a mais antiga.
-     */
+    
+    //Busca todas as infrações já com os dados do motorista e do veículo
+    //envolvidos, ordenadas da mais recente para a mais antiga.
     public List<InfracaoCompleta> buscarTodas() throws SQLException {
         List<InfracaoCompleta> lista = new ArrayList<>();
 
@@ -88,10 +112,7 @@ public class InfracaoDAO {
         return lista;
     }
 
-    /**
-     * Busca as infrações de um único veículo (por placa), já com os dados
-     * do motorista e do veículo envolvidos.
-     */
+    //Busca as infrações de um único veículo
     public List<InfracaoCompleta> buscarPorPlaca(String placa) throws SQLException {
         List<InfracaoCompleta> lista = new ArrayList<>();
 
@@ -112,10 +133,28 @@ public class InfracaoDAO {
         return lista;
     }
 
-    /**
-     * Monta um Endereco, um Motorista, um Veiculo e uma Infracao a partir da
-     * linha atual do ResultSet, agrupando tudo em um InfracaoCompleta.
-     */
+    //Busca as infrações cometidas por um único motorista
+    public List<InfracaoCompleta> buscarPorMotorista(int idMotorista) throws SQLException {
+        List<InfracaoCompleta> lista = new ArrayList<>();
+
+        String sql = SQL_BASE + "WHERE m.\"idMotorista_PK\" = ? ORDER BY i.\"dtInfracao\" DESC";
+
+        try (Connection conn = ConnectionFactory.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, idMotorista);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    lista.add(mapRow(rs));
+                }
+            }
+        }
+
+        return lista;
+    }
+
+    //Pega todas as informações de infrações
     private InfracaoCompleta mapRow(ResultSet rs) throws SQLException {
         Endereco enderecoInfracao = new Endereco();
         enderecoInfracao.setCep(rs.getString("infr_cep"));
@@ -129,9 +168,7 @@ public class InfracaoDAO {
 
         Infracao infracao = new Infracao();
         infracao.setDataInfracao(rs.getDate("dtInfracao"));
-        infracao.setHoraInfracao(
-            rs.getTime("horaInfracao") != null ? rs.getTime("horaInfracao").toString() : null
-        );
+        infracao.setHoraInfracao(rs.getTime("horaInfracao").toString());
         infracao.setTipoInfracao(rs.getString("descricaoTipoInfracao"));
         infracao.setLocalInfracao(enderecoInfracao);
 
@@ -139,7 +176,7 @@ public class InfracaoDAO {
         marca.setDescricaoMarca(rs.getString("descricaoMarca"));
 
         Modelo modelo = new Modelo();
-        modelo.setDescricaoModelo(rs.getString("descricaoModeo"));
+        modelo.setDescricaoModelo(rs.getString("descricaoModelo"));
         modelo.setDataLancamento(rs.getDate("anoLancamento"));
 
         Veiculo veiculo = new Veiculo();
@@ -173,6 +210,16 @@ public class InfracaoDAO {
         motorista.setSexo(rs.getString("descricaoSexo"));
         motorista.setEndereco(enderecoMotorista);
 
+        int idCnh = rs.getInt("idCNH_PK");
+        if (!rs.wasNull()) {
+            CNH cnh = new CNH();
+            cnh.setIdCNH(idCnh);
+            cnh.setNroRegistro(rs.getString("nroRegistro"));
+            cnh.setDataEmissao(rs.getDate("dtEmissao"));
+            cnh.setDataValidade(rs.getDate("dtValidade"));
+            motorista.setCnh(cnh);
+        }
+
         InfracaoCompleta infracaoCompleta = new InfracaoCompleta();
         infracaoCompleta.setInfracao(infracao);
         infracaoCompleta.setMotorista(motorista);
@@ -181,37 +228,4 @@ public class InfracaoDAO {
         return infracaoCompleta;
     }
 
-    /**
-     * Agrupa numa única estrutura o resultado da consulta que junta
-     * Motorista + Veiculo + Infracao, sem precisar alterar as classes model.
-     */
-    public static class InfracaoCompleta {
-        private Infracao infracao;
-        private Motorista motorista;
-        private Veiculo veiculo;
-
-        public Infracao getInfracao() {
-            return infracao;
-        }
-
-        public void setInfracao(Infracao infracao) {
-            this.infracao = infracao;
-        }
-
-        public Motorista getMotorista() {
-            return motorista;
-        }
-
-        public void setMotorista(Motorista motorista) {
-            this.motorista = motorista;
-        }
-
-        public Veiculo getVeiculo() {
-            return veiculo;
-        }
-
-        public void setVeiculo(Veiculo veiculo) {
-            this.veiculo = veiculo;
-        }
-    }
 }
