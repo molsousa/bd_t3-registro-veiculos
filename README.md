@@ -16,6 +16,14 @@ O programa foi todo implementado em `Java 8` e fora utilizado o `postgresql` com
 
 Para a consultar os dados, foi utilizado interface gráfica em Java usando `javax.swing.*`.
 
+## Modelo Entidade-Relacionamento
+
+Segue abaixo o Modelo Entidade-Relacionamento planejado para esse trabalho.
+
+<div align="center">
+    <img width="600px" title="MER" src="./img/MER.png"/>
+</div>
+
 ## Estrutura dos pacotes
 
 ```ASCII
